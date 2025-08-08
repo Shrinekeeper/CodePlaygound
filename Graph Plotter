@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graph Plotter</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+  <style>
+    body {
+      background-color: #1a1a1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      padding: 2rem;
+      color: #cdcdcd;
+    }
+    h1 {
+      font-size: 2.25rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+    #controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    input, select {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      background-color: #ffffff;
+      color: #333333;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.2);
+    }
+    button {
+      padding: 0.5rem 1.25rem;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: none;
+      background-color: #333333;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #555555;
+    }
+    #plot {
+      width: 100%;
+      height: 600px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Graph Plotter</h1>
+  <div id="controls">
+    <input type="text" id="expression" value="sin(x)" placeholder="Enter equation (e.g., sin(x) or x^2 + y^2)" />
+    <select id="mode">
+      <option value="2D">2D</option>
+      <option value="3D">3D</option>
+    </select>
+    <button onclick="plot()">Plot</button>
+  </div>
+  <div id="plot"></div>
+
+  <script>
+    function plot() {
+      const expr = document.getElementById("expression").value;
+      const mode = document.getElementById("mode").value;
+
+      if (mode === "2D") {
+        const xValues = Array.from({ length: 500 }, (_, i) => -10 + i * 0.04);
+        let yValues;
+        try {
+          yValues = xValues.map(x => math.evaluate(expr, { x }));
+        } catch (e) {
+          alert("Invalid expression");
+          return;
+        }
+
+        const trace = {
+          x: xValues,
+          y: yValues,
+          mode: 'lines',
+          type: 'scatter',
+          line: { color: 'rgb(255,0,255)', width: 2 }
+        };
+
+        Plotly.newPlot("plot", [trace], {
+          title: "2D Graph",
+          paper_bgcolor: "#1a1a1a",
+          plot_bgcolor: "#1a1a1a",
+          font: { color: '#cdcdcd' }
+        });
+      } else {
+        const xValues = Array.from({ length: 100 }, (_, i) => -10 + i * 0.2);
+        const yValues = Array.from({ length: 100 }, (_, i) => -10 + i * 0.2);
+        const zValues = xValues.map(x =>
+          yValues.map(y => {
+            try {
+              return math.evaluate(expr, { x, y });
+            } catch {
+              return 0;
+            }
+          })
+        );
+
+        const trace3D = {
+          type: 'surface',
+          x: xValues,
+          y: yValues,
+          z: zValues,
+          colorscale: 'Rainbow'
+        };
+
+        Plotly.newPlot("plot", [trace3D], {
+          title: "3D Graph",
+          paper_bgcolor: "#1a1a1a",
+          plot_bgcolor: "#1a1a1a",
+          font: { color: '#cdcdcd' }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
